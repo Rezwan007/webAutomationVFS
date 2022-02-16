@@ -1,17 +1,26 @@
 import time
 import csv
+import pytesseract
 
 from selenium import webdriver
 
 from selenium.webdriver.support import wait
 from selenium.webdriver.common.keys import Keys
+
+from PIL import Image
+from selenium import webdriver
+from PIL import Image, ImageFilter
+import selenium.common.exceptions as SeleniumExceptions
+
+pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 # web driver import with path
-browser = webdriver.Chrome("C:/Users/Rezwan/Documents/Python Scripts/chromedriver.exe")
+browser = webdriver.Chrome("../../Documents/Python_Scripts/chromedriver.exe")
 browser.get(
     "https://row1.vfsglobal.com/GlobalAppointment/Account/RegisteredLogin?q=shSA0YnE4pLF9Xzwon/x/EpJs2NIweLgQQ8d+rbZm2FGx5CHm/l3tpvUMzs2dkBUvzmr37Un+1CH0C4/6fHwqQ==")
 wait = WebDriverWait(browser, 600)
@@ -23,10 +32,45 @@ username_textbox.send_keys("utsha1234@gmail.com")
 password_textbox = browser.find_element_by_id("Password")
 password_textbox.send_keys("Rezwan@007")
 
-captch = input("Enter the catch number: ")
-captch_textbox = browser.find_element_by_id("CaptchaInputText")
-captch_textbox.send_keys(captch)
+time.sleep(5)
+# browser.switch_to.frame("main")
 
+def get_captcha(driver, element, path):
+    imageCaptcha = browser.find_element_by_id("CaptchaImage")
+    time.sleep(2)
+    # now that we have the preliminary stuff out of the way time to get that image :D
+    location = imageCaptcha.location
+    size = imageCaptcha.size
+    # saves screenshot of entire page
+    driver.save_screenshot(path)
+
+    # uses PIL library to open image in memory
+    image = Image.open(path)
+
+    left = location['x']-5
+    top = location['y']+10
+    right = location['x'] + size['width']
+    bottom = location['y'] + size['height']
+
+    image = image.crop((left, top, right, bottom))  # defines crop points
+    image.save(path, 'png')  # saves new cropped image
+
+    captcha = pytesseract.image_to_string(image)
+    captcha = captcha.replace(" ", "").strip()
+    print(captcha)
+
+    # download image/captcha
+    img = browser.find_element_by_id("CaptchaInputText")
+    # img.send_keys(captcha)
+    get_captcha(browser, img, "captcha.png")
+
+# except:
+#     captch = input("Enter the catch number: ")
+#     captch_textbox = browser.find_element_by_id("CaptchaInputText")
+#     captch_textbox.send_keys(captch)
+
+
+time.sleep(50)
 # Final button fit for to login
 login_button = browser.find_element_by_xpath("/html/body/div[2]/div[1]/div[4]/div/form/div[4]/input")
 login_button.submit()
@@ -95,7 +139,8 @@ with open('Add_New_Customer.csv', 'r') as csv_file:
     try:
         for line in csv_reader:
             # Passport Number
-            passport_number = browser.find_element_by_xpath('/html/body/div[2]/div[1]/div[3]/div[4]/form/div[1]/div[2]/input')
+            passport_number = browser.find_element_by_xpath(
+                '/html/body/div[2]/div[1]/div[3]/div[4]/form/div[1]/div[2]/input')
             passport_number.send_keys(line[0])
             time.sleep(2)
 
@@ -105,64 +150,80 @@ with open('Add_New_Customer.csv', 'r') as csv_file:
             time.sleep(2)
 
             # Passport Expiry date
-            Passport_Expiry_Date = browser.find_element_by_xpath('/html/body/div[2]/div[1]/div[3]/div[4]/form/div[3]/div[2]/input')
+            Passport_Expiry_Date = browser.find_element_by_xpath(
+                '/html/body/div[2]/div[1]/div[3]/div[4]/form/div[3]/div[2]/input')
             Passport_Expiry_Date.send_keys(line[2])
             time.sleep(2)
 
-            #Nationality Select
-            NationalityId=browser.find_element_by_name('NationalityId')
-            NationalityIdDD=Select(NationalityId)
+            # Nationality Select
+            NationalityId = browser.find_element_by_name('NationalityId')
+            NationalityIdDD = Select(NationalityId)
             NationalityIdDD.select_by_value('11')
             time.sleep(2)
 
-            #Fiirst name
-            First_name=browser.find_element_by_xpath('/html/body/div[2]/div[1]/div[3]/div[4]/form/div[5]/div[2]/input').clear()
-            #First_name.clear()
+            # Fiirst name
+            First_name = browser.find_element_by_xpath(
+                '/html/body/div[2]/div[1]/div[3]/div[4]/form/div[5]/div[2]/input').clear()
+            # First_name.clear()
             time.sleep(2)
-            #First_name.key_down(Keys.CONTROL).send_keys('A').key_up(Keys.CONTROL).perform()
-            First_name = browser.find_element_by_xpath('/html/body/div[2]/div[1]/div[3]/div[4]/form/div[5]/div[2]/input')
+            # First_name.key_down(Keys.CONTROL).send_keys('A').key_up(Keys.CONTROL).perform()
+            First_name = browser.find_element_by_xpath(
+                '/html/body/div[2]/div[1]/div[3]/div[4]/form/div[5]/div[2]/input')
             First_name.send_keys(line[4])
-            #First_name.sendKeys(Keys.chord(Keys.CONTROL, "a"), [4]);
+            # First_name.sendKeys(Keys.chord(Keys.CONTROL, "a"), [4]);
             time.sleep(2)
 
-            #Last Name
-            Last_name = browser.find_element_by_xpath('/html/body/div[2]/div[1]/div[3]/div[4]/form/div[6]/div[2]/input').clear()
-            #Last_name.clear()
+            # Last Name
+            Last_name = browser.find_element_by_xpath(
+                '/html/body/div[2]/div[1]/div[3]/div[4]/form/div[6]/div[2]/input').clear()
+            # Last_name.clear()
             time.sleep(2)
-            #Last_name.sendKeys(Keys.chord(Keys.CONTROL, "a"), line[5]);
+            # Last_name.sendKeys(Keys.chord(Keys.CONTROL, "a"), line[5]);
             Last_name = browser.find_element_by_xpath('/html/body/div[2]/div[1]/div[3]/div[4]/form/div[6]/div[2]/input')
             Last_name.send_keys(line[5])
             time.sleep(2)
 
-            #Select Gender
-            GenderId=browser.find_element_by_name('GenderId')
-            GenderIdDD=Select(GenderId)
+            # Select Gender
+            GenderId = browser.find_element_by_name('GenderId')
+            GenderIdDD = Select(GenderId)
             GenderIdDD.select_by_value('1')
             time.sleep(2)
 
-            #Country Code
-            Country_code=browser.find_element_by_xpath('/html/body/div[2]/div[1]/div[3]/div[4]/form/div[8]/div[2]/input[1]').clear()
-            #Country_code.clear()
+            # Country Code
+            Country_code = browser.find_element_by_xpath(
+                '/html/body/div[2]/div[1]/div[3]/div[4]/form/div[8]/div[2]/input[1]').clear()
+            # Country_code.clear()
             time.sleep(2)
-            #Last_name.sendKeys(Keys.chord(Keys.CONTROL, "a"), line[7]);
-            Country_code = browser.find_element_by_name('/html/body/div[2]/div[1]/div[3]/div[4]/form/div[8]/div[2]/input[1]')
-            Country_code.send_keys(line[7])
+            # Country_code.send_keys(Keys.chord(Keys.SHIFT, "="), line[7]);
+            Country_code = browser.find_element_by_xpath(
+                '/html/body/div[2]/div[1]/div[3]/div[4]/form/div[8]/div[2]/input[1]')
+            Country_code.send_keys("+88")
             time.sleep(2)
 
             # Mobile Number Without 0
-            Mobile_Number = browser.find_element_by_xpath('/html/body/div[2]/div[1]/div[3]/div[4]/form/div[8]/div[2]/input[2]').clear()
-            #Mobile_Number.clear()
+            Mobile_Number = browser.find_element_by_xpath(
+                '/html/body/div[2]/div[1]/div[3]/div[4]/form/div[8]/div[2]/input[2]').clear()
+            # Mobile_Number.clear()
             time.sleep(2)
-            #Mobile_Number.sendKeys(Keys.chord(Keys.CONTROL, "a"), [9]);
-            Mobile_Number = browser.find_element_by_xpath('/html/body/div[2]/div[1]/div[3]/div[4]/form/div[8]/div[2]/input[2]')
+            # Mobile_Number.sendKeys(Keys.chord(Keys.CONTROL, "a"), [9]);
+            Mobile_Number = browser.find_element_by_xpath(
+                '/html/body/div[2]/div[1]/div[3]/div[4]/form/div[8]/div[2]/input[2]')
             Mobile_Number.send_keys(line[9])
 
             # Email address
-            Email = browser.find_element_by_xpath('/html/body/div[2]/div[1]/div[3]/div[4]/form/div[9]/div[2]/input').clear()
+            Email = browser.find_element_by_xpath(
+                '/html/body/div[2]/div[1]/div[3]/div[4]/form/div[9]/div[2]/input').clear()
             time.sleep(2)
             Email = browser.find_element_by_xpath('/html/body/div[2]/div[1]/div[3]/div[4]/form/div[9]/div[2]/input')
             Email.send_keys(line[8])
             time.sleep(2)
+
+            # Click for final submit button
+            print("Click for submit button")
+            submit_button = browser.find_element_by_xpath(
+                "/html/body/div[2]/div[1]/div[3]/div[4]/form/div[12]/input[2]")
+            submit_button.submit()
+
             time.sleep(20)
     except:
         browser.start_client()
