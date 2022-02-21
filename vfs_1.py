@@ -32,13 +32,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 proxy = "127.0.0.1:1000"
-webdriver.DesiredCapabilities.FIREFOX['proxy']={
-    "httpProxy":proxy,
-    "ftpProxy":proxy,
-    "sslProxy":proxy,
-    "noProxy":None,
-    "proxyType":"MANUAL",
-    "autodetect":False
+webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
+    "httpProxy": proxy,
+    "ftpProxy": proxy,
+    "sslProxy": proxy,
+    "noProxy": None,
+    "proxyType": "MANUAL",
+    "autodetect": False
 }
 
 # web driver import with path
@@ -55,6 +55,7 @@ password_textbox = browser.find_element_by_id("Password")
 password_textbox.send_keys("Mr1234567@")
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
 
 # change frame
 # browser.switch_to.frame("Main")
@@ -80,14 +81,14 @@ def get_captcha(driver, element, path):
 
     captcha = pytesseract.image_to_string(image)
     captcha = captcha.replace(" ", "").strip()
-    print("captcha image saved: ",captcha)
+    print("captcha image saved: ", captcha)
+
 
 # download image/captcha
 img = browser.find_element_by_id("CaptchaInputText")
 get_captcha(browser, img, "captcha.png")
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
 
 api_key = os.getenv('APIKEY_2CAPTCHA', '634fbcaa51e41ae95f54251634ffb0ba')
 
@@ -102,12 +103,14 @@ except Exception as e:
 else:
     # sys.exit('solved: ' + str(result))
     print("Captcha is:", result)
+    # print("Captcha code is:" result(code))
     time.sleep(5)
 
 
 # captcha input from terminal
 captch = input("Enter the catch number: ")
 captch_textbox = browser.find_element_by_id("CaptchaInputText")
+captch_textbox.send_keys(Keys.SHIFT)
 captch_textbox.send_keys(captch)
 
 browser.implicitly_wait(30)
@@ -181,16 +184,21 @@ addCustomer_button.click()
 print("Waiting for Image captcha solution by manual")
 
 # image captcha
-time.sleep(50)
+# time.sleep(50)
 # 2captcha solution for recaptcha v3
 api_key = os.getenv('APIKEY_2CAPTCHA', '634fbcaa51e41ae95f54251634ffb0ba')
 
 solver = TwoCaptcha(api_key)
 
 try:
-    result = solver.recaptcha(
-        sitekey='6LfDxboZAAAAAD6GHukjvUy6lszoeG3H4nQW57b6',
-        url='https://2captcha.com/demo/recaptcha-v2-invisible?level=low')
+    result = solver.hcaptcha(
+        sitekey='33f96e6a-38cd-421b-bb68-7806e1764460',
+        url='https://2captcha.com/demo/hcaptcha?difficulty=easy',
+        #  proxy={
+        #  'type': 'HTTPS',
+        #  'uri': 'login:password@IP_address:PORT'
+        #  }
+    )
 
 except Exception as e:
     sys.exit(e)
@@ -198,6 +206,17 @@ except Exception as e:
 else:
     # sys.exit('result: ' + str(result))
     print("Captcha is solved", result)
+
+    # recaptchafield = browser.find_element_by_id("h-captcha-response-1n5u19bklico")
+    # recaptchafieldinput = result("code")
+    # # recaptchafieldinput.send_keys(recaptchafieldinput)
+    # recaptchafield.send_keys(recaptchafieldinput.higher())
+    # recaptchafield.send_keys(Keys.ENTER)
+
+recaptchafield = input("Enter the reCatch code: ")
+recaptchafieldinput = browser.find_element_by_id("h-captcha-response-1n5u19bklico")
+recaptchafieldinput.send_keys(recaptchafield)
+recaptchafieldinput.send_keys(Keys.ENTER)
 
 # # trying to solve image captcha
 # frames = browser.find_elements_by_id("anchor")
