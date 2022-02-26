@@ -4,24 +4,19 @@ import csv
 import pytesseract
 import os
 import sys
-import pydub
-import urllib
 
-from selenium import webdriver
-from selenium.webdriver.remote.webelement import WebElement
+import random
+import socket
+import struct
+
 from twocaptcha import TwoCaptcha
 
-from selenium.webdriver.support import wait
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
-from speech_recognition import Recognizer, AudioFile
+from selenium.webdriver.chrome.options import Options
 
-from time import sleep
-from random import randint
-
-from PIL import Image
 from selenium import webdriver
-from PIL import Image, ImageFilter
-import selenium.common.exceptions as SeleniumExceptions
+from PIL import Image
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 path = os.path.abspath(os.getcwd())
@@ -31,28 +26,44 @@ from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-proxy = "127.0.0.1:1000"
-webdriver.DesiredCapabilities.FIREFOX['proxy'] = {
-    "httpProxy": proxy,
-    "ftpProxy": proxy,
-    "sslProxy": proxy,
-    "noProxy": None,
-    "proxyType": "MANUAL",
-    "autodetect": False
-}
+socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff)))
+'197.38.59.143'
+socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff)))
+'228.237.175.64'
 
+# PROXY="176.9.119.170:8080"
+# webdriver.DesiredCapabilities.CHROME['proxy'] = {
+#     "httpProxy": PROXY,
+#     "ftpProxy": PROXY,
+#     "sslProxy": PROXY,
+#     "proxyType": "MANUAL",
+#
+# }
+# webdriver.DesiredCapabilities.CHROME['acceptSslCerts']=True
+
+url = "https://row1.vfsglobal.com/GlobalAppointment/Account/RegisteredLogin?q=shSA0YnE4pLF9Xzwon/x/EpJs2NIweLgQQ8d+rbZm2FGx5CHm/l3tpvUMzs2dkBUvzmr37Un+1CH0C4/6fHwqQ=="
+extension = "https://chrome.google.com/webstore/detail/hcaptcha-solver/lfpfbgeoodeejmjdlfjbfjkemjlblijg"
 # web driver import with path
-browser = webdriver.Chrome("../../Documents/Python_Scripts/chromedriver.exe")
-browser.get(
-    "https://row1.vfsglobal.com/GlobalAppointment/Account/RegisteredLogin?q=shSA0YnE4pLF9Xzwon/x/EpJs2NIweLgQQ8d+rbZm2FGx5CHm/l3tpvUMzs2dkBUvzmr37Un+1CH0C4/6fHwqQ==")
-wait = WebDriverWait(browser, 600)
+# browser = webdriver.Chrome("../../Documents/Python_Scripts/chromedriver.exe")
 
+
+# add extension from chrome
+chrome_options = Options()
+chrome_options.add_extension('C:/Users/Rezwan/PycharmProjects/webAutomationVFS/ex/hcaptcha.crx')
+browser = webdriver.Chrome(options=chrome_options, executable_path='../../Documents/Python_Scripts/chromedriver')
+
+browser.get(url)
+time.sleep(20)
 # Assign the value in the field
+# usernameinput = input("Please enter your EmailId")
 username_textbox = browser.find_element_by_id("EmailId")
-username_textbox.send_keys("vfsdate9@gmail.com")
+username_textbox.send_keys("utsha1234@gmail.com")
+# username_textbox.send_keys(usernameinput)
 
+# passwordinput = input("Please Enter your Password")
 password_textbox = browser.find_element_by_id("Password")
-password_textbox.send_keys("Mr1234567@")
+password_textbox.send_keys("Rezwan@007")
+# password_textbox.send_keys(passwordinput)
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
@@ -72,9 +83,9 @@ def get_captcha(driver, element, path):
     image = Image.open(path)
 
     left = location['x']
-    top = location['y']
-    right = location['x'] + size['width']
-    bottom = location['y'] + size['height']
+    top = location['y'] + 120
+    right = location['x'] + size['width'] + 140
+    bottom = location['y'] + size['height'] + 140
 
     image = image.crop((left, top, right, bottom))  # defines crop points
     image.save(path, 'png')  # saves new cropped image
@@ -103,15 +114,20 @@ except Exception as e:
 else:
     # sys.exit('solved: ' + str(result))
     print("Captcha is:", result)
+    print("Captcha is:", result['code'])
     # print("Captcha code is:" result(code))
     time.sleep(5)
 
-
-# captcha input from terminal
-captch = input("Enter the catch number: ")
 captch_textbox = browser.find_element_by_id("CaptchaInputText")
-captch_textbox.send_keys(Keys.SHIFT)
-captch_textbox.send_keys(captch)
+solution = result['code']
+captch_textboxdd = ActionChains(browser)
+captch_textboxdd.move_to_element(captch_textbox).click()
+# action.click()
+captch_textboxdd.key_down(Keys.SHIFT)
+captch_textboxdd.send_keys(solution)
+captch_textboxdd.key_up(Keys.SHIFT)
+captch_textboxdd.perform()
+time.sleep(5)  # waiting is mandatory
 
 browser.implicitly_wait(30)
 # Final button fit for to login
@@ -122,25 +138,25 @@ print("login Successful")
 # print("login Successful")
 
 browser.implicitly_wait(30)
-
 # Click link for to go search
-link = browser.find_element_by_link_text('Schedule Appointment')
+link = browser.find_element_by_xpath('//*[@id="Accordion1"]/div/div[2]/div/ul/li[1]/a')
 link.click()
 print("Waiting for reload the page")
 
 browser.implicitly_wait(30)
-time.sleep(10)
+time.sleep(15)
 # click dropdown by values
-LocationId = WebDriverWait(browser, 10).until(
+LocationId = WebDriverWait(browser, 30).until(
     EC.presence_of_element_located((By.NAME, 'LocationId'))
 )
 LocationIdDD = Select(LocationId)
-LocationIdDD.select_by_value('217')
+LocationIdDD.select_by_value('448')
 print("waiting for relaod the drop-down")
 
+time.sleep(10)
 browser.implicitly_wait(30)
 # click second dropdown by index
-VisaCategoryId = WebDriverWait(browser, 10).until(
+VisaCategoryId = WebDriverWait(browser, 30).until(
     EC.presence_of_element_located((By.NAME, 'VisaCategoryId'))
 )
 VisaCategoryIdDD = Select(VisaCategoryId)
@@ -153,7 +169,7 @@ try:
     # link2 = browser.find_element_by_link_text('Click here to know the earliest available date')
     # print(link2)
     # wait 10 seconds before looking for element
-    visa_date = WebDriverWait(browser, 10).until(
+    visa_date = WebDriverWait(browser, 30).until(
         EC.presence_of_element_located((By.XPATH, '//*[@id="trNonPrime"]/td[1]'))
     )
     print(visa_date.text)
@@ -170,14 +186,14 @@ print('*' * 10)
 browser.implicitly_wait(30)
 # print some text of update work
 print("Now final click for the schedule")
-continue_button = WebDriverWait(browser, 10).until(
+continue_button = WebDriverWait(browser, 30).until(
     EC.presence_of_element_located((By.XPATH, '/html/body/div[2]/div[1]/div[3]/div[3]/form/div[2]/input'))
 )
 continue_button.submit()
 
 browser.implicitly_wait(30)
 # Add Customer button fit for to login
-addCustomer_button = WebDriverWait(browser, 10).until(
+addCustomer_button = WebDriverWait(browser, 30).until(
     EC.presence_of_element_located((By.XPATH, '/html/body/div[2]/div[1]/div[3]/div[3]/a'))
 )
 addCustomer_button.click()
@@ -185,6 +201,14 @@ print("Waiting for Image captcha solution by manual")
 
 # image captcha
 # time.sleep(50)
+# browser.execute_script("document.getElementByName('h-recaptcha-response').style.display = 'block';")
+# # browser.execute_script("documents.getElementByXpath('textarea[@name='h-captcha-response'].style.display='block')")
+# browser.find_element_by_xpath("textarea[@name='h-captcha-response']").send_keys(result['captchaId'])
+# browser.execute_script("document.getElementByName('h-recaptcha-response').style.display = 'block';")
+# # browser.execute_script("documents.getElementByXpath('textarea[@name='h-captcha-response'].style.display='block')")
+# browser.find_element_by_xpath("textarea[@name='h-captcha-response").send_keys(result['code'])
+# browser.execute_script("document.getElementByName('h-recaptcha-response').style.display = 'none';")
+# # browser.execute_script("documents.getElementByXpath('textarea[@name='h-captcha-response'].style.display='none')")
 # 2captcha solution for recaptcha v3
 api_key = os.getenv('APIKEY_2CAPTCHA', '634fbcaa51e41ae95f54251634ffb0ba')
 
@@ -194,10 +218,10 @@ try:
     result = solver.hcaptcha(
         sitekey='33f96e6a-38cd-421b-bb68-7806e1764460',
         url='https://2captcha.com/demo/hcaptcha?difficulty=easy',
-        #  proxy={
-        #  'type': 'HTTPS',
-        #  'uri': 'login:password@IP_address:PORT'
-        #  }
+        proxy={
+            'type': 'HTTPS:',
+            'uri': 'login:password@127.0.0.2:1000'
+        }
     )
 
 except Exception as e:
@@ -205,81 +229,27 @@ except Exception as e:
 
 else:
     # sys.exit('result: ' + str(result))
-    print("Captcha is solved", result)
+    print("Captcha is solved:", result)
+    print("Captcha ID is:", result['captchaId'])
+    print("Captcha code is:", result['code'])
 
-    # recaptchafield = browser.find_element_by_id("h-captcha-response-1n5u19bklico")
-    # recaptchafieldinput = result("code")
-    # # recaptchafieldinput.send_keys(recaptchafieldinput)
-    # recaptchafield.send_keys(recaptchafieldinput.higher())
-    # recaptchafield.send_keys(Keys.ENTER)
+    browser.execute_script(f"document.getElementsByName('h-captcha-response')[0] = '{result['captchaId']}';")
+    time.sleep(1)
+    browser.execute_script(f"document.getElementsByName('h-recaptcha-response')[1] = '{result['code']}';")
+    time.sleep(1)
+    browser.execute_script("document.getElementById('challenge-form').submit();")
+    # XPATH of textarea = //textarea[@name='h-captcha-response']
+    # recaptchafield.send_keys(recaptchafield)
+    # recaptchafield.send_keys(recaptchafield.higher())
+    # recaptchafield.keys_down(Keys.ENTER)
 
-recaptchafield = input("Enter the reCatch code: ")
-recaptchafieldinput = browser.find_element_by_id("h-captcha-response-1n5u19bklico")
-recaptchafieldinput.send_keys(recaptchafield)
-recaptchafieldinput.send_keys(Keys.ENTER)
-
-# # trying to solve image captcha
-# frames = browser.find_elements_by_id("anchor")
-# # browser.switch_to.frame(frames[0])
-# sleep(randint(2, 4))
+# recaptchafield = input("Enter the reCatch code: ")
+# recaptchafieldinput = browser.find_element_by_id("h-captcha-response-1mqwulue1iv")
+# recaptchafieldinput.send_keys(recaptchafield)
+# recaptchafieldinput.send_keys(Keys.ENTER)
 #
-# browser.find_element_by_xpath("/html/body/div/div[2]").click()
-#
-# browser.switch_to.default_content()
-#
-# frames = browser.find_element_by_xpath(
-#     "/html/body/div/div[3]/div[1]").find_elements_by_id("checkbox")
-#
-# sleep(randint(2, 4))
-#
-# browser.switch_to.default_content()
-#
-# frames = browser.find_elements_by_id("checkbox")
-#
-# browser.switch_to.frame(frames[-1])
-#
-# browser.find_element_by_id("recaptcha-audio-button").click()
-#
-# browser.switch_to.default_content()
-#
-# frames = browser.find_elements_by_id("checkbox")
-#
-# browser.switch_to.frame(frames[-1])
-#
-# sleep(randint(2, 4))
-# # fixed until this one all the xpath
-# browser.find_element_by_xpath("/html/body/div/div/div[3]/div/button").click()
-#
-# try:
-#     src = browser.find_element_by_id("audio-source").get_attribute("src")
-#     print(src)
-#     urllib.request.urlretrieve(src, path+"\\audio.mp3")
-#
-#     sound = pydub.AudioSegment.from_mp3(
-#         path+"\\audio.mp3").export(path+"\\audio.wav", format="wav")
-#
-#     recognizer = Recognizer()
-#
-#     recaptcha_audio = AudioFile(path+"\\audio.wav")
-#
-#     with recaptcha_audio as source:
-#         audio = recognizer.record(source)
-#
-#     text = recognizer.recognize_google(audio, language="de-DE")
-#
-#     print(text)
-#
-#     inputfield = browser.find_element_by_id("audio-response")
-#     inputfield.send_keys(text.lower())
-#
-#     inputfield.send_keys(Keys.ENTER)
-#
-#     sleep(10)
-#     print("Success")
-#     browser.quit()
-# except NameError:
-#     print("Failed")
-#     print(NameError)
+# checkboxforHcaptcha= browser.find_element_by_id("checkbox").click()
+time.sleep(50)
 
 # Web automation from CSV
 browser.implicitly_wait(30)
@@ -382,15 +352,17 @@ with open('Add_New_Customer.csv', 'r') as csv_file:
         browser.start_client()
 
 # Continue button after add new customer
-continue_button2 = WebDriverWait(browser, 10).until(
+continue_button2 = WebDriverWait(browser, 30).until(
     EC.presence_of_element_located(By.XPATH, ("/html/body/div[2]/div[1]/div[3]/div[4]/form/div[2]/input"))
 )
 continue_button2.submit()
 
-# add again if there is another new customer
+WebDriverWait(browser, 10).until(EC.alert_is_present())
+browser.switch_to.alert.accept()
+print("alert accepted")
 
 # continue button again after get the total price of visa schedule
-continue_button3 = WebDriverWait(browser, 10).until(
+continue_button3 = WebDriverWait(browser, 30).until(
     EC.presence_of_element_located(By.XPATH, ("/html/body/div[2]/div[1]/div[3]/div[12]/input"))
 )
 continue_button3.submit()
@@ -414,6 +386,38 @@ browser.implicitly_wait(30)
 #         cell.find_element_by_link_text('10').click()
 #         break
 # exit
+
+# RBG selected date XPATH: //div[@id='calendar']//td[@style='background-color: rgb(188, 237, 145); cursor: pointer;']
+# all the date XPATH: //div[@id='calendar']//td[@class]//div[@class='fc-day-number']
+# selected date using date-date: //td[@data-date]
+
+date_date_start= input("Please input the starting date")
+
+
+alldates= browser.find_element(By.XPATH,"//div[@id='calendar']//td[@class]//div[@class='fc-day-number']")
+rbgdates= browser.find_element(By.XPATH, "//div[@id='calendar']//td[@style='background-color: rgb(188, 237, 145); cursor: pointer;']")
+
+for dateelement in alldates:
+    date=dateelement.text
+    print(date)
+    if date== rbgdates:
+        dateelement.click()
+        selecttime= browser.find_elements(By.XPATH,"//input[@name='selectedTimeBand']")
+        selecttime.click()
+        scheduletime= browser.find_elements(By.XPATH, "//td[@style='text-align:center']")
+        scheduletimetxt=scheduletime.text
+        print(scheduletimetxt)
+    else:
+        print("Date Not found")
+    break
+
+# confirm button after get the schedule date
+confirmButton= browser.find_element(By.XPATH, "//input[@value='Confirm']")
+confirmButton.click()
+
+# ajax confirmation
+
+#
 browser.close()
 # Restart
 
